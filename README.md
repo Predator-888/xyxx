@@ -1,15 +1,17 @@
-[# xyxx](https://colab.research.google.com/drive/13R3AHItYLJ2skxeriji0KWpNJ5qIHM0Z?usp=sharing)
-With u.data & u.item
+```python
 import pandas as pd
 from sklearn.metrics.pairwise import cosine_similarity
 
+# BLOCK 1: Load & Merge Data
 ratings = pd.read_csv('u.data', sep='\t', names=['user_id', 'movie_id', 'rating', 'time'])
 movies = pd.read_csv('u.item', sep='|', encoding='latin-1', usecols=[0, 1], names=['movie_id', 'title'])
 df = pd.merge(ratings, movies, on='movie_id')
 
+# BLOCK 2: Create User-Item Matrix & Similarity Matrix
 matrix = df.pivot_table(index='user_id', columns='title', values='rating').fillna(0)
 sim_df = pd.DataFrame(cosine_similarity(matrix), index=matrix.index, columns=matrix.index)
 
+# BLOCK 3: Predict Ratings for Unseen Movies (User 1)
 user = 1
 scores = {}
 top_users = sim_df[user].drop(user).sort_values(ascending=False).head(30)
@@ -20,7 +22,7 @@ for movie in matrix.columns[matrix.loc[user] == 0]:
     if weights.sum() > 0:
         scores[movie] = (weights * matrix.loc[top_users.index, movie][rated]).sum() / weights.sum()
 
+# BLOCK 4: Print Top 5 Recommendations
 for movie, score in sorted(scores.items(), key=lambda x: x[1], reverse=True)[:5]:
     print(f"{movie}: {score:.2f}")
-
-# Without data
+```
